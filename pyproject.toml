@@ -1,0 +1,29 @@
+[project]
+name = "pdf-document-q-a-rag-model"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "clean-text>=0.7.1",
+    "faiss-cpu>=1.15.1",
+    "ipykernel>=7.3.0",
+    "ipywidgets>=8.1.9",
+    "jupyter>=1.1.1",
+    "jupyterlab-widgets>=3.0.17",
+    "langchain>=1.4.2",
+    "langchain-community>=0.4.2",
+    "langchain-huggingface>=1.2.2",
+    "langchain-text-splitters>=1.1.2",
+    "notebook>=7.6.2",
+    "numpy>=2.4.6",
+    "paddleocr>=2.10.0",
+    "paddlepaddle>=3.3.1",
+    "pandas>=3.0.3",
+    "pymupdf>=1.28.2",
+    "sentence-transformers>=6.1.0",
+    "sentencepiece>=0.2.2",
+    "torch>=2.12.0",
+    "transformers>=5.17.0",
+    "widgetsnbextension>=4.0.16",
+]

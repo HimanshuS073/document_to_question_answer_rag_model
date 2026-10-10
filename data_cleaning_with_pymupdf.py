@@ -1,44 +1,17 @@
 import re
-
 from pymupdf_text_extraction import TextExtractionWithPyMuPDF
-
-
-# ============================================================
-# CONFIGURATION
-# ============================================================
+from pathlib import Path
 
 document_file = "Math-for-Programmers.pdf"
 
-
-# ============================================================
-# PDF TEXT CLEANING FUNCTIONS
-# ============================================================
-
 def remove_pdf_artifacts(text):
-    """
-    Remove repeated PDF headers/footers and publishing artifacts.
-    """
-
     artifacts = [
-        "Manning Publications Co.",
-        "To comment go to liveBook",
-        "MEAP Edition",
-        "Manning Early Access Program",
     ]
 
     for artifact in artifacts:
         text = text.replace(artifact, "")
-
     return text
-
-
 def normalize_whitespace(text):
-    """
-    Clean unnecessary spaces and line formatting
-    without destroying the overall structure.
-    """
-
-    # Normalize line endings
     text = text.replace("\r\n", "\n")
     text = text.replace("\r", "\n")
 
@@ -52,6 +25,7 @@ def normalize_whitespace(text):
     lines = []
 
     for line in text.split("\n"):
+
         line = line.strip()
 
         if line:
@@ -59,17 +33,7 @@ def normalize_whitespace(text):
 
     return "\n".join(lines)
 
-
 def remove_standalone_page_numbers(text):
-    """
-    Remove lines that contain only a page number.
-
-    Example:
-        172
-
-    But this does NOT remove numbers appearing inside
-    normal sentences or code.
-    """
 
     lines = text.split("\n")
 
@@ -77,6 +41,7 @@ def remove_standalone_page_numbers(text):
 
     for line in lines:
 
+        # Remove lines containing only numbers
         if re.fullmatch(r"\d+", line):
             continue
 
@@ -86,34 +51,31 @@ def remove_standalone_page_numbers(text):
 
 
 def remove_excessive_blank_lines(text):
-    """
-    Keep a maximum of one blank line between sections.
-    """
 
+    # Convert 3 or more newlines into 2
     text = re.sub(r"\n{3,}", "\n\n", text)
 
     return text.strip()
 
 
-def clean_text(text):
-    """
-    Complete cleaning pipeline.
-    """
 
+def clean_text(text):
+
+    # Step 1
     text = remove_pdf_artifacts(text)
 
+    # Step 2
     text = normalize_whitespace(text)
 
+    # Step 3
     text = remove_standalone_page_numbers(text)
 
+    # Step 4
     text = remove_excessive_blank_lines(text)
 
     return text
 
 
-# ============================================================
-# EXTRACT TEXT USING PYMUPDF
-# ============================================================
 
 print("Extracting PDF text...")
 
@@ -121,41 +83,36 @@ pymupdf_pages = TextExtractionWithPyMuPDF.text_extraction(
     document_file
 )
 
-print(f"Extracted {len(pymupdf_pages)} pages.")
 
-
-# ============================================================
-# CLEAN EACH PAGE
-# ============================================================
 
 cleaned_pages = []
-
-print("Cleaning text...")
 
 for page in pymupdf_pages:
 
     page_number = page["page"]
+
     raw_text = page["text"]
 
-    cleaned_text = clean_text(raw_text)
+    # Use our reusable cleaning function
+    cleaned = clean_text(raw_text)
 
     cleaned_pages.append({
         "page": page_number,
-        "text": cleaned_text
+        "text": cleaned
     })
 
 
 print("Cleaning complete.")
 
+print("Saving cleaned pages...")
 
-# ============================================================
-# DISPLAY CLEANED TEXT
-# ============================================================
+# Save beside this script, regardless of the terminal's current directory.
+script_folder = Path(__file__).resolve().parent
+chunks_folder = script_folder / "chunks"
+chunks_folder.mkdir(parents=True, exist_ok=True)
 
 for page in cleaned_pages:
+    output_file = chunks_folder / f"page_{page['page']}.txt"
+    output_file.write_text(page["text"], encoding="utf-8")
 
-    print("\n" + "=" * 80)
-    print(f"PAGE: {page['page']}")
-    print("=" * 80)
-
-    print(page["text"])
+print(f"Saved {len(cleaned_pages)} page files in: {chunks_folder}")
